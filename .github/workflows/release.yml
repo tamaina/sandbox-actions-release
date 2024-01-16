@@ -66,5 +66,5 @@ jobs:
         run: |
           echo "${{ env.CHANGES_TEMPLATE }}\n"
           sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
-          sed -i "1i $(echo "${CHANGES_TEMPLATE}" | sed -r 's/$/\\\n/' | sed -r '$s/\\\n//' | while IFS= read -r line; do echo -n "$line"; done)" CHANGELOG.md
+          sed -i "1i $(echo "${CHANGES_TEMPLATE}" | sed -r 's/$/\n/' | sed -r '$s/\n//' | while IFS= read -r line; do echo -n "$line"; done)" CHANGELOG.md
           cat CHANGELOG.md
