@@ -3,17 +3,7 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  CHANGES_TEMPLATE: |
-    ## 202x.x.x (Unreleased)\
-    \
-    ### General\
-    -\
-    \
-    ### Client\
-    -\
-    \
-    ### Server\
-    -\
+  CHANGES_TEMPLATE: "## 202x.x.x (Unreleased)\n\n### General\n- \n\n### Client\n- \n\n### Server\n- \n\n"
 
 name: "Release Manager"
 
@@ -29,6 +19,9 @@ jobs:
         run: "gh pr list --state open --head release/ --json number --jq '.[] | .number'"
         id: get_prs
   create-release:
+    permissions:
+      contents: write
+      pull-requests: write
     needs: get-prs
     runs-on: ubuntu-latest
     if: ${{ needs.get-prs.outputs.pr_number == '' }}
