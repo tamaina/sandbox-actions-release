@@ -40,6 +40,7 @@ jobs:
       - name: Get current version
         run: "jq -r '.version' package.json"
         id: get_current_version
+      - run: echo "${{ steps.get_current_version.outputs.stdout }}"
       # バージョンをインクリメント
       - name: Increment version
         uses: actions/script@v7
