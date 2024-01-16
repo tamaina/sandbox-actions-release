@@ -9,6 +9,7 @@ jobs:
     outputs:
       pr_number: ${{ steps.get_prs.outputs.value }}
     steps:
+      - uses: actions/checkout@v4
       # headがrelease/かつopenのPRを1つ取得
       - name: Get PRs
         run: "gh pr list --state open --head release/ --json number --jq '.[] | .number'"
