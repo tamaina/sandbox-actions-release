@@ -4,16 +4,16 @@ on:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   CHANGES_TEMPLATE: |
-    ## 202x.x.x (Unreleased)
-
-    ### General
-    -
-
-    ### Client
-    -
-
-    ### Server
-    -
+    ## 202x.x.x (Unreleased)\
+    \
+    ### General\
+    -\
+    \
+    ### Client\
+    -\
+    \
+    ### Server\
+    -\
 
 name: "Release Manager"
 
@@ -38,9 +38,9 @@ jobs:
       - uses: actions/checkout@v4
       # jqでpackage.jsonから現在のバージョンを取得
       - name: Get current version
-        run: "jq -r '.version' package.json"
+        run: echo "ver=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
         id: get_current_version
-      - run: echo "${{ steps.get_current_version.outputs.stdout }}"
+      - run: echo "${{ steps.get_current_version.outputs.ver }}"
       # バージョンをインクリメント
       - name: Increment version
         uses: actions/script@v7
