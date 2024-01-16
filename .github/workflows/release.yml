@@ -40,6 +40,7 @@ jobs:
       - name: Get current version
         run: |
           echo "current_version=$(jq -r '.version' package.json)" >> $GITHUB_ENV
+          echo "current_version=$(jq -r '.version' package.json)"
         id: cv
       # バージョンをインクリメント
       - name: Increment version
