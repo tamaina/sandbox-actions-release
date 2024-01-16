@@ -79,11 +79,9 @@ jobs:
           echo "changelog=$(sed -n '/## 202x.x.x (Unreleased)/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d') >> $GITHUB_OUTPUT
         id: changelog
       # CHANGELOG.mdのバージョンの書き換え
-      # 環境変数から挿入する部分: https://qiita.com/sahayan/items/8658992f0f48eb5d2bc4
       - name: Modify CHANGELOG.md
         run: |
           sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
-          sed -i "1i $(echo "${CHANGES_TEMPLATE}" | sed -r 's/$/\\n/' | while IFS= read -r line; do echo -n "$line"; done)" CHANGELOG.md
       # バージョンとタグをコミット・プッシュ
       - name: Commit version
         run: |
@@ -99,3 +97,14 @@ jobs:
       - name: Create release
         run: |
           gh release create ${{ steps.increment_version.outputs.result }}-beta.0 --prerelease --title "${{ steps.increment_version.outputs.result }}-beta.0" --notes "${{ steps.changelog.outputs.changelog }}"
+      # CHANGELOG.mdにUnreleasedを追加
+      # 環境変数から挿入する部分: https://qiita.com/sahayan/items/8658992f0f48eb5d2bc4
+      - name: Modify CHANGELOG.md
+        run: |
+          sed -i "1i $(echo "${CHANGES_TEMPLATE}" | sed -r 's/$/\\n/' | while IFS= read -r line; do echo -n "$line"; done)" CHANGELOG.md
+      - name: Commit CHANGELOG mofdification
+        run: |
+          if (git diff --shortstat | grep '[0-9]'); then \
+            git commit -am "Update CHANGELOG.md (prepend Unreleased)"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
