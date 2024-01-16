@@ -16,11 +16,36 @@ jobs:
         id: get_prs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OWNER: ${{ github.repository_owner }}
-          REPO: ${{ github.event.repository.name }}
   create-release:
     needs: get-prs
     runs-on: ubuntu-latest
     if: ${{ needs.get-prs.outputs.pr_number == '' }}
+    # 日付ベースでリリースを作成
+    name: "Create Release"
     steps:
-      - run: echo "${{ needs.get-prs.outputs.pr_number }}"
+      - uses: actions/checkout@v4
+      # jqでpackage.jsonから現在のバージョンを取得
+      - name: Get current version
+        run: "jq -r '.version' package.json"
+        id: get_current_version
+      # バージョンをインクリメント
+      - name: Increment version
+        uses: actions/script@v7
+        with:
+          script: |
+            const now = new Date();
+            const year = now.toLocaleDateString('en-US', { year: 'numeric', timeZone: 'Asia/Tokyo' });
+            const month = now.toLocaleDateString('en-US', { month: 'numeric', timeZone: 'Asia/Tokyo' });
+            const [major, minor, patch] = '${{ steps.get_current_version.outputs.stdout }}'.split('.');
+
+            if (year !== major || month !== minor) {
+              return `${year}.${month}.0`;
+            } else {
+              return `${major}.${minor}.${Number(patch) + 1}`;
+            }
+          result-encoding: string
+        id: increment_version
+      # バージョンをpackage.jsonに書き込み
+      - name: Write version
+        run: "jq '.version = \"${{ steps.increment_version.outputs.result }}-beta.0\"' package.json > package.json.tmp && mv package.json.tmp package.json"
+      - run: "cat package.json"
