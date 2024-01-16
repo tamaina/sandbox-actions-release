@@ -1,9 +1,21 @@
+## 202x.x.x (Unreleased)
+
+### General
+- 
+
+### Client
+- 
+
+### Server
+- 
+
+
 on:
   workflow_dispatch:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  CHANGES_TEMPLATE: "## 202x.x.x (Unreleased)\n\n### General\n- \n\n### Client\n- \n\n### Server\n- \n"
+  CHANGES_TEMPLATE: "## 2024.1.1\n\n### General\n- \n\n### Client\n- \n\n### Server\n- \n"
 
 name: "Release Manager"
 
@@ -59,12 +71,12 @@ jobs:
       # CHANGELOG.mdのUnreleasedの内容を後で使うために取得
       - name: Get changelog
         run: |
-          sed -n '/## 202x.x.x (Unreleased)/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d'
+          sed -n '/## 2024.1.1/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d'
         id: changelog
       # CHANGELOG.mdのバージョンの書き換え
       - name: Modify CHANGELOG.md
         run: |
-          sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
+          sed -i 's/## 2024.1.1/## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
           sed -i "1i $(echo "${CHANGES_TEMPLATE}" | sed -r 's/$/\\n/' | while IFS= read -r line; do echo -n "$line"; done)" CHANGELOG.md
       # バージョンをコミット
       - name: Commit version
