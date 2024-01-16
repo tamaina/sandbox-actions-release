@@ -76,7 +76,7 @@ jobs:
       # CHANGELOG.mdのUnreleasedの内容を後で使うために取得
       - name: Get changelog
         run: |
-          sed -n '/## 202x.x.x (Unreleased)/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d'
+          echo "changelog=$(sed -n '/## 202x.x.x (Unreleased)/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d') >> $GITHUB_OUTPUT
         id: changelog
       # CHANGELOG.mdのバージョンの書き換え
       # 環境変数から挿入する部分: https://qiita.com/sahayan/items/8658992f0f48eb5d2bc4
@@ -98,4 +98,4 @@ jobs:
       # リリースを作成
       - name: Create release
         run: |
-          gh release create ${{ steps.increment_version.outputs.result }}-beta.0 --prerelease --title "${{ steps.increment_version.outputs.result }}-beta.0" --notes "${{ steps.changelog.outputs.stdout }}"
+          gh release create ${{ steps.increment_version.outputs.result }}-beta.0 --prerelease --title "${{ steps.increment_version.outputs.result }}-beta.0" --notes "${{ steps.changelog.outputs.changelog }}"
