@@ -90,14 +90,14 @@ jobs:
           git config --local user.email "LuckyBeast@users.noreply.github.com"
           git config --local user.name "LuckyBeast"
           git commit -am "Bump version to ${{ steps.increment_version.outputs.result }}-beta.0"
-      # バージョンをpush
-      - name: Push version
-        run: |
-          git push origin HEAD:release/${{ steps.increment_version.outputs.result }}-beta.0 --tags
       # バージョンをタグ付け
       - name: Tag version
         run: |
           git tag -a ${{ steps.increment_version.outputs.result }}-beta.0 -m "Bump version to ${{ steps.increment_version.outputs.result }}-beta.0"
+      # バージョンをpush
+      - name: Push version
+        run: |
+          git push origin HEAD:release/${{ steps.increment_version.outputs.result }}-beta.0 --tags
       # リリースを作成
       - name: Create release
         run: |
