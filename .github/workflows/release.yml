@@ -1,0 +1,21 @@
+on:
+  workflow_dispatch:
+
+name: "Release Manager"
+
+jobs:
+  get-prs:
+    runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.get_prs.outputs.value }}
+    steps:
+      # headがrelease/かつopenのPRを1つ取得
+      - name: Get PRs
+        run: "gh pr list --state open --head release/ --json number --jq '.[] | .number'"
+        id: get_prs
+  create-release:
+    needs: get-prs
+    runs-on: ubuntu-latest
+    if: ${{ needs.get-prs.outputs.pr_number == '' }}
+    steps:
+      - run: echo "${{ needs.get-prs.outputs.pr_number }}"
