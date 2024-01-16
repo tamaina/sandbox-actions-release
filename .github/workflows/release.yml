@@ -76,7 +76,7 @@ jobs:
       # CHANGELOG.mdのUnreleasedの内容を後で使うために取得
       - name: Get changelog
         run: |
-          echo "changelog=$(sed -n '/## 202x.x.x (Unreleased)/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d') >> $GITHUB_OUTPUT
+          echo "changelog=$(sed -n '/## 202x.x.x (Unreleased)/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d')" >> $GITHUB_OUTPUT
         id: changelog
       # CHANGELOG.mdのバージョンの書き換え
       - name: Modify CHANGELOG.md
