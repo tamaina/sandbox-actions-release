@@ -64,6 +64,6 @@ jobs:
       # CHANGELOG.mdのバージョンの書き換え
       - name: Modify CHANGELOG.md
         run: |
-          echo "${CHANGES_TEMPLATE}\n"
+          echo "${{ env.CHANGES_TEMPLATE }}\n"
           sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
-          sed "1i ${CHANGES_TEMPLATE}\n" CHANGELOG.md > CHANGELOG.md.tmp && mv CHANGELOG.md.tmp CHANGELOG.md
+          sed "1i "${CHANGES_TEMPLATE}"" CHANGELOG.md > CHANGELOG.md.tmp && mv CHANGELOG.md.tmp CHANGELOG.md
