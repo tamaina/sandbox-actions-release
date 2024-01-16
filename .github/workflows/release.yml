@@ -38,8 +38,9 @@ jobs:
       - uses: actions/checkout@v4
       # jqでpackage.jsonから現在のバージョンを取得
       - name: Get current version
-        run: "jq -r '.version' package.json"
-        id: get_current_version
+        run: |
+          echo "current_version=$((jq -r '.version' package.json))" >> $GITHUB_ENV
+        id: cv
       # バージョンをインクリメント
       - name: Increment version
         uses: actions/script@v7
@@ -48,8 +49,8 @@ jobs:
             const now = new Date();
             const year = now.toLocaleDateString('en-US', { year: 'numeric', timeZone: 'Asia/Tokyo' });
             const month = now.toLocaleDateString('en-US', { month: 'numeric', timeZone: 'Asia/Tokyo' });
-            const [major, minor, patch] = '${{ steps.get_current_version.outputs.stdout }}'.split('.');
-            console.log(year, month, '${{ steps.get_current_version.outputs.stdout }}', major, minor, patch);
+            const [major, minor, patch] = '${{ steps.cv.outputs.current_version }}'.split('.');
+            console.log(year, month, '${{ steps.cv.outputs.current_version }}', major, minor, patch);
             if (year !== major || month !== minor) {
               return `${year}.${month}.0`;
             } else {
