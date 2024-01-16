@@ -1,6 +1,20 @@
 on:
   workflow_dispatch:
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CHANGES_TEMPLATE: |
+    ## 202x.x.x (Unreleased)
+
+    ### General
+    -
+
+    ### Client
+    -
+
+    ### Server
+    -
+
 name: "Release Manager"
 
 jobs:
@@ -14,8 +28,6 @@ jobs:
       - name: Get PRs
         run: "gh pr list --state open --head release/ --json number --jq '.[] | .number'"
         id: get_prs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   create-release:
     needs: get-prs
     runs-on: ubuntu-latest
@@ -37,7 +49,7 @@ jobs:
             const year = now.toLocaleDateString('en-US', { year: 'numeric', timeZone: 'Asia/Tokyo' });
             const month = now.toLocaleDateString('en-US', { month: 'numeric', timeZone: 'Asia/Tokyo' });
             const [major, minor, patch] = '${{ steps.get_current_version.outputs.stdout }}'.split('.');
-
+            console.log(year, month, major, minor, patch);
             if (year !== major || month !== minor) {
               return `${year}.${month}.0`;
             } else {
@@ -47,5 +59,32 @@ jobs:
         id: increment_version
       # バージョンをpackage.jsonに書き込み
       - name: Write version
-        run: "jq '.version = \"${{ steps.increment_version.outputs.result }}-beta.0\"' package.json > package.json.tmp && mv package.json.tmp package.json"
-      - run: "cat package.json"
+        run: |
+          jq '.version = "${{ steps.increment_version.outputs.result }}-beta.0"' package.json > package.json.tmp && mv package.json.tmp package.json
+          jq '.version = "${{ steps.increment_version.outputs.result }}-beta.0"' packages/misskey-js/package.json > packages/misskey-js/package.json.tmp && mv packages/misskey-js/package.json.tmp packages/misskey-js/package.json
+      # CHANGELOG.mdのUnreleasedの内容を後で使うために取得
+      - name: Get changelog
+        run: |
+          sed -n '/## 202x.x.x (Unreleased)/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d'
+        id: changelog
+      # CHANGELOG.mdのバージョンの書き換え
+      - name: Modify CHANGELOG.md
+        run: |
+          sed -i 's/## 202x.x.x (Unreleased)/${{ env.CHANGES_TEMPLATE }}\n## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
+      # バージョンをコミット
+      - name: Commit version
+        run: |
+          git config --local user.email "LuckyBeast@users.noreply.github.com"
+          git config --local user.name "LuckyBeast"
+          git commit -am "Bump version to ${{ steps.increment_version.outputs.result }}-beta.0"
+      # バージョンをタグ付け
+      - name: Tag version
+        run: |
+          git tag -a v${{ steps.increment_version.outputs.result }}-beta.0 -m "Bump version to ${{ steps.increment_version.outputs.result }}-beta.0"
+      # バージョンをpush
+      - name: Push version
+        run: "git push origin HEAD:release/${{ steps.increment_version.outputs.result }}-beta.0 --tags"
+      # リリースを作成
+      - name: Create release
+        run: |
+          gh release create ${{ steps.increment_version.outputs.result }}-beta.0 --prerelease --title "${{ steps.increment_version.outputs.result }}-beta.0" --notes "${{ steps.changelog.outputs.stdout }}"
