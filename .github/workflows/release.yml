@@ -84,20 +84,17 @@ jobs:
         run: |
           sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
           sed -i "1i $(echo "${CHANGES_TEMPLATE}" | sed -r 's/$/\\n/' | while IFS= read -r line; do echo -n "$line"; done)" CHANGELOG.md
-      # バージョンをコミット
+      # バージョンとタグをコミット・プッシュ
       - name: Commit version
         run: |
           git config --local user.email "LuckyBeast@users.noreply.github.com"
           git config --local user.name "LuckyBeast"
-          git commit -am "Bump version to ${{ steps.increment_version.outputs.result }}-beta.0"
-      # バージョンをタグ付け
-      - name: Tag version
-        run: |
-          git tag -a ${{ steps.increment_version.outputs.result }}-beta.0 -m "Bump version to ${{ steps.increment_version.outputs.result }}-beta.0"
-      # バージョンをpush
-      - name: Push version
-        run: |
-          git push origin HEAD:release/${{ steps.increment_version.outputs.result }}-beta.0 --tags
+          if (git diff --shortstat | grep '[0-9]'); then \
+            git commit -am "Bump version to ${{ steps.increment_version.outputs.result }}-beta.0"
+            git tag -a ${{ steps.increment_version.outputs.result }}-beta.0 -m "Bump version to ${{ steps.increment_version.outputs.result }}-beta.0"
+            git push origin HEAD:${{ github.ref_name }}
+            git push origin HEAD:release/${{ steps.increment_version.outputs.result }}-beta.0 --tags
+          fi
       # リリースを作成
       - name: Create release
         run: |
