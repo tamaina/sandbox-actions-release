@@ -3,7 +3,7 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  CHANGES_TEMPLATE: "## 202x.x.x (Unreleased)\n\n### General\n- \n\n### Client\n- \n\n### Server\n- \n\n"
+  CHANGES_TEMPLATE: "## 202x.x.x (Unreleased)\n\n### General\n- \n\n### Client\n- \n\n### Server\n- \n"
 
 name: "Release Manager"
 
@@ -66,5 +66,5 @@ jobs:
         run: |
           echo "${{ env.CHANGES_TEMPLATE }}\n"
           sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
-          sed -i "1i $(echo "${CHANGES_TEMPLATE}" | sed -r 's/$/\\n/' | while IFS= read -r line; do echo -n "$line"; done | sed '$d')" CHANGELOG.md
+          sed -i "1i $(echo "${CHANGES_TEMPLATE}" | sed -r 's/$/\\n/' | while IFS= read -r line; do echo -n "$line"; done)" CHANGELOG.md
           cat CHANGELOG.md
