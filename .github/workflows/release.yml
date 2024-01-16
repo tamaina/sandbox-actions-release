@@ -72,21 +72,5 @@ jobs:
       # CHANGELOG.mdのバージョンの書き換え
       - name: Modify CHANGELOG.md
         run: |
-          sed -i 's/## 202x.x.x (Unreleased)/${{ env.CHANGES_TEMPLATE }}\n## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
-      # バージョンをコミット
-      - name: Commit version
-        run: |
-          git config --local user.email "LuckyBeast@users.noreply.github.com"
-          git config --local user.name "LuckyBeast"
-          git commit -am "Bump version to ${{ steps.increment_version.outputs.result }}-beta.0"
-      # バージョンをタグ付け
-      - name: Tag version
-        run: |
-          git tag -a v${{ steps.increment_version.outputs.result }}-beta.0 -m "Bump version to ${{ steps.increment_version.outputs.result }}-beta.0"
-      # バージョンをpush
-      - name: Push version
-        run: "git push origin HEAD:release/${{ steps.increment_version.outputs.result }}-beta.0 --tags"
-      # リリースを作成
-      - name: Create release
-        run: |
-          gh release create ${{ steps.increment_version.outputs.result }}-beta.0 --prerelease --title "${{ steps.increment_version.outputs.result }}-beta.0" --notes "${{ steps.changelog.outputs.stdout }}"
+          sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
+          sed "1i ${{ env.CHANGES_TEMPLATE }}\n" CHANGELOG.md > CHANGELOG.md.tmp && mv CHANGELOG.md.tmp CHANGELOG.md
