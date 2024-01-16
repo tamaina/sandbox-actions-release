@@ -49,7 +49,7 @@ jobs:
             const year = now.toLocaleDateString('en-US', { year: 'numeric', timeZone: 'Asia/Tokyo' });
             const month = now.toLocaleDateString('en-US', { month: 'numeric', timeZone: 'Asia/Tokyo' });
             const [major, minor, patch] = '${{ steps.get_current_version.outputs.stdout }}'.split('.');
-            console.log(year, month, major, minor, patch);
+            console.log(year, month, steps.get_current_version.outputs.stdout, major, minor, patch);
             if (year !== major || month !== minor) {
               return `${year}.${month}.0`;
             } else {
