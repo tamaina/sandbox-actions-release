@@ -57,7 +57,7 @@ jobs:
             const month = now.toLocaleDateString('en-US', { month: 'numeric', timeZone: 'Asia/Tokyo' });
             const [major, minor, _patch] = process.env.CURRENT_VERSION.split('.');
             const patch = Number(_patch.split('-')[0]);
-            if (patch.isNaN()) {
+            if (Number.isNaN(patch)) {
               console.error('Invalid patch version', year, month, process.env.CURRENT_VERSION, major, minor, _patch);
               throw new Error('Invalid patch version');
             }
