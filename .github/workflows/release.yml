@@ -13,6 +13,8 @@ jobs:
       - name: Get PRs
         run: "gh pr list --state open --head release/ --json number --jq '.[] | .number'"
         id: get_prs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   create-release:
     needs: get-prs
     runs-on: ubuntu-latest
