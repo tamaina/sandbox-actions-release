@@ -55,15 +55,15 @@ jobs:
               return `${major}.${minor}.${patch + 1}`;
             }
           result-encoding: string
-        id: next_target_version
+        id: target_version
       - name: beta 0
-        run: echo "result=${{ steps.next_target_version.outputs.result }}-beta.0" >> $GITHUB_OUTPUT
-        id: next_release_version
+        run: echo "result=${{ steps.target_version.outputs.result }}-beta.0" >> $GITHUB_OUTPUT
+        id: release_version
       # バージョンをpackage.jsonに書き込み
       - name: Write version
         run: |
-          jq '.version = "${{ steps.next_release_version.outputs.result }}"' package.json > package.json.tmp && mv package.json.tmp package.json
-          jq '.version = "${{ steps.next_release_version.outputs.result }}"' packages/misskey-js/package.json > packages/misskey-js/package.json.tmp && mv packages/misskey-js/package.json.tmp packages/misskey-js/package.json
+          jq '.version = "${{ steps.release_version.outputs.result }}"' package.json > package.json.tmp && mv package.json.tmp package.json
+          jq '.version = "${{ steps.release_version.outputs.result }}"' packages/misskey-js/package.json > packages/misskey-js/package.json.tmp && mv packages/misskey-js/package.json.tmp packages/misskey-js/package.json
       # CHANGELOG.mdのUnreleasedの内容を取得
       - name: Get changelog
         run: |
@@ -76,19 +76,19 @@ jobs:
       # CHANGELOG.mdのバージョンの書き換え
       - name: Modify CHANGELOG.md
         run: |
-          sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.next_target_version.outputs.result }}/' CHANGELOG.md
+          sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.target_version.outputs.result }}/' CHANGELOG.md
       # release/ブランチとタグを作成
       - name: Commit version
         run: |
-          git commit -am "Bump version to ${{ steps.next_release_version.outputs.result }}"
-          git push origin HEAD:release/${{ steps.next_target_version.outputs.result }}
-          git tag "${{ steps.next_release_version.outputs.result }}"
-          git push origin "${{ steps.next_release_version.outputs.result }}"
+          git commit -am "Bump version to ${{ steps.release_version.outputs.result }}"
+          git push origin HEAD:release/${{ steps.target_version.outputs.result }}
+          git tag "${{ steps.release_version.outputs.result }}"
+          git push origin "${{ steps.release_version.outputs.result }}"
       # リリースを作成
       - name: Create release
         run: |
-          gh release create "${{ steps.next_release_version.outputs.result }}" --prerelease --title "${{ steps.next_release_version.outputs.result }}" --notes "${{ steps.changelog.outputs.changelog }}"
+          gh release create "${{ steps.release_version.outputs.result }}" --prerelease --title "${{ steps.release_version.outputs.result }}" --notes "${{ steps.changelog.outputs.changelog }}"
       # PRを作成
       - name: Create PR
         run: |
-          gh pr create --draft --title "Release: ${{ steps.next_target_version.outputs.result }}" --body "${{ steps.changelog.outputs.changelog }}" --head release/${{ steps.next_target_version.outputs.result }} --base ${{ github.ref_name }}
+          gh pr create --draft --title "Release: ${{ steps.target_version.outputs.result }}" --body "${{ steps.changelog.outputs.changelog }}" --head release/${{ steps.target_version.outputs.result }} --base ${{ github.ref_name }}

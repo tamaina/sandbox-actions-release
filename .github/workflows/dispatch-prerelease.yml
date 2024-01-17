@@ -33,12 +33,13 @@ jobs:
         with:
           pr_number: ${{ inputs.pr_number }}
           user: ${{ inputs.user }}
+        id: get_pr
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.get_pr.outputs.pr_head_ref }}
       - name: Get Target Version
         uses: ./.github/actions/get-target-version
-
+        id: v
       # バージョンをインクリメント
       - name: Increment version
         uses: actions/script@v7
@@ -66,26 +67,29 @@ jobs:
             return `${major}.${minor}.${_patch.split('-')[0]}-rc.${pre + 1}`;
 
           result-encoding: string
-        id: next_release_version
+        id: release_version
       # バージョンをpackage.jsonに書き込み
       - name: Write version
         run: |
-          jq '.version = "${{ steps.next_release_version.outputs.result }}"' package.json > package.json.tmp && mv package.json.tmp package.json
-          jq '.version = "${{ steps.next_release_version.outputs.result }}"' packages/misskey-js/package.json > packages/misskey-js/package.json.tmp && mv packages/misskey-js/package.json.tmp packages/misskey-js/package.json
+          jq '.version = "${{ steps.release_version.outputs.result }}"' package.json > package.json.tmp && mv package.json.tmp package.json
+          jq '.version = "${{ steps.release_version.outputs.result }}"' packages/misskey-js/package.json > packages/misskey-js/package.json.tmp && mv packages/misskey-js/package.json.tmp packages/misskey-js/package.json
       # release/ブランチとタグを作成
       - name: Commit version
         run: |
-          git commit -am "Bump version to ${{ steps.next_release_version.outputs.result }}"
-          git push origin HEAD:release/${{ steps.next_target_version.outputs.result }}
-          git tag "${{ steps.next_release_version.outputs.result }}"
-          git push origin "${{ steps.next_release_version.outputs.result }}"
+          git commit -am "Bump version to ${{ steps.release_version.outputs.result }}"
+          git push origin HEAD:release/${{ steps.v.outputs.target_version }}
+          git tag "${{ steps.release_version.outputs.result }}"
+          git push origin "${{ steps.release_version.outputs.result }}"
       # CHANGELOG.mdの内容を取得
       - name: Get changelog
         uses: ./.github/actions/get-changelog
+        with:
+          version: ${{ steps.v.outputs.target_version }}
+        id: changelog
       # リリースを作成
       - name: Create release
         run: |
-          gh release create "${{ steps.next_release_version.outputs.result }}" --prerelease --title "${{ steps.next_release_version.outputs.result }}" --notes "${{ steps.changelog.outputs.changelog }}"
+          gh release create "${{ steps.release_version.outputs.result }}" --prerelease --title "${{ steps.release_version.outputs.result }}" --notes "${{ steps.changelog.outputs.changelog }}"
       # PRのnotesを更新
       # (通常release-edit-with-pushで更新されているためここで更新されることはない)
       #- name: Update PR

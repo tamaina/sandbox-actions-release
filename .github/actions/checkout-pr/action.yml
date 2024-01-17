@@ -7,6 +7,11 @@ inputs:
     type: string
     description: "user name"
     required: true
+outputs:
+  pr_is_draft:
+    value: ${{ steps.get_pr.outputs.pr_is_draft }}
+  pr_head_ref:
+    value: ${{ steps.get_pr.outputs.pr_head_ref }}
 runs:
   using: "composite"
   steps:

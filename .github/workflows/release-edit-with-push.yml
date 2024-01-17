@@ -27,9 +27,13 @@ jobs:
         id: get_pr
       - name: Get Target Version
         uses: ./.github/actions/get-target-version
+        id: v
       # CHANGELOG.mdの内容を取得
       - name: Get changelog
         uses: ./.github/actions/get-changelog
+        with:
+          version: ${{ steps.v.outputs.target_version }}
+        id: changelog
       # PRのnotesを更新
       - name: Update PR
         run: |

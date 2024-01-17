@@ -41,16 +41,19 @@ jobs:
           ref: ${{ steps.get_pr.outputs.pr_head_ref }}
       - name: Get Target Version
         uses: ./.github/actions/get-target-version
+        id: v
 
       # バージョンをpackage.jsonに書き込み
       - name: Write version
         uses: ./.github/actions/reweite-package-json
+        with:
+          version: ${{ steps.v.outputs.target_version }}
 
       # release/ブランチとタグを作成
       - name: Commit version
         run: |
-          git commit -am "[skip ci] Release: ${{ steps.next_target_version.outputs.result }}"
-          git push origin HEAD:release/${{ steps.next_target_version.outputs.result }}
+          git commit -am "[skip ci] Release: ${{ steps.v.outputs.target_version }}"
+          git push origin HEAD:release/${{ steps.v.outputs.target_version }}
 
       - name: Try Merge
         run: |
@@ -59,16 +62,19 @@ jobs:
       # CHANGELOG.mdの内容を取得
       - name: Get changelog
         uses: ./.github/actions/get-changelog
+        with:
+          version: ${{ steps.v.outputs.target_version }}
+        id: changelog
 
       - name: Create tag
         run: |
-          git tag "${{ steps.next_target_version.outputs.result }}"
-          git push origin "${{ steps.next_target_version.outputs.result }}"
+          git tag "${{ steps.v.outputs.target_version }}"
+          git push origin "${{ steps.v.outputs.target_version }}"
 
       # リリースを作成
       - name: Create release
         run: |
-          gh release create "${{ steps.next_target_version.outputs.result }}" --title "${{ steps.next_target_version.outputs.result }}" --notes "${{ steps.changelog.outputs.changelog }}"
+          gh release create "${{ steps.v.outputs.target_version }}" --title "${{ steps.v.outputs.target_version }}" --notes "${{ steps.changelog.outputs.changelog }}"
 
       # CHANGELOG.mdにUnreleasedのテンプレートを追加
       - uses: actions/checkout@v4
