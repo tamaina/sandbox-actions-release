@@ -44,7 +44,7 @@ jobs:
       - name: Increment version
         uses: actions/script@v7
         env:
-          CURRENT_VERSION: ${{ steps.get_current_version.outputs.current_version }}
+          CURRENT_VERSION: ${{ steps.v.outputs.current_version }}
           pr_is_draft: steps.get_pr.outputs.pr_is_draft
         with:
           script: |
