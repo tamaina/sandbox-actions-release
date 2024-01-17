@@ -5,10 +5,6 @@ on:
         type: string
         description: 'User name'
         default: 'github-actions[bot]'
-    secrets:
-      GITHUB_TOKEN:
-        description: 'GITHUB_TOKEN'
-        required: true
 
 permissions:
   contents: write

@@ -26,8 +26,6 @@ jobs:
     with:
       pr_number: ${{ needs.get-prs.outputs.pr_number }}
       user: 'LuckyBeast'
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   create-target:
     uses: ./.github/workflows/create-target.yml
@@ -35,5 +33,3 @@ jobs:
     if: ${{ needs.get-prs.outputs.pr_number != '' }}
     with:
       user: 'LuckyBeast'
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
