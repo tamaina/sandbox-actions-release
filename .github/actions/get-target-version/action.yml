@@ -18,4 +18,3 @@ runs:
           return process.env.CURRENT_VERSION.split('-')[0];
         result-encoding: string
       id: next_target_version
-      shell: bash
