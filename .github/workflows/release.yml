@@ -15,7 +15,8 @@ jobs:
       - uses: actions/checkout@v4
       # headがrelease/かつopenのPRを1つ取得
       - name: Get PRs
-        run: "gh pr list --state open --head release/ --json number --jq '.[] | .number'"
+        run: |
+          gh pr list --limit 1 --search "head:release/ is:open" --json number  --jq '.[] | .number'
         id: get_prs
 
   dispatch-release:
