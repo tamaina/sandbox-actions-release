@@ -1,3 +1,12 @@
+inputs:
+  pr_number:
+    type: string
+    description: "PR number"
+    required: true
+  user:
+    type: string
+    description: "user name"
+    required: true
 runs:
   using: "composite"
   steps:
