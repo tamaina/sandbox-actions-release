@@ -10,10 +10,6 @@ name: "Release Manager: release RC when ready for review"
 jobs:
   check:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       # PR情報を取得
@@ -22,9 +18,14 @@ jobs:
           PR_JSON=$(gh pr view ${{ github.event.pull_request.number }} --json isDraft,headRefName)
           echo "PR_HEAD_REF=$(echo $PR_JSON | jq -r '.headRefName')" >> $GITHUB_OUTPUT
         id: get_pr
-      # PRがrelease/から始まっていれば続行
-      - uses: ./.github/workflows/dispatch-prerelease.yml
-        if: startsWith(steps.get_pr.outputs.PR_HEAD_REF, 'release/')
-        with:
-          pr_number: ${{ github.event.pull_request.number }}
-          user: 'LuckyBeast'
+  release:
+    uses: ./.github/workflows/dispatch-prerelease.yml
+    needs: check
+    if: startsWith(steps.get_pr.outputs.PR_HEAD_REF, 'release/')
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+      user: 'LuckyBeast'
