@@ -105,7 +105,7 @@ jobs:
       - name: Modify CHANGELOG.md
         run: |
             sed -i '/^## 202x.x.x (Unreleased)/,/^## /d' CHANGELOG.md
-            sed -i "1i ## ${{ steps.next_version.outputs.next }}"
+            sed -i "1i ## ${{ steps.next_version.outputs.next }}" CHANGELOG.md
       # …と一見無駄に見える作業でdiffを作成しrelease/ブランチを作成
       - name: Commit version
         run: |
