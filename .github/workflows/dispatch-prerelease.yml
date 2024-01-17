@@ -50,7 +50,7 @@ jobs:
             const [major, minor, _patch, _pre] = process.env.CURRENT_VERSION.split('.');
             const pre = Number(_pre);
             if (Number.isNaN(pre)) {
-              console.error('Invalid pre version', year, month, process.env.CURRENT_VERSION, major, minor, _patch);
+              console.error('Invalid pre version', process.env.CURRENT_VERSION, major, minor, _patch);
               throw new Error('Invalid pre version');
             }
 
