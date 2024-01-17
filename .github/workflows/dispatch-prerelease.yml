@@ -21,23 +21,30 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  dispatch-prerelease:
+  pr-ref:
     name: "Dispatch Pre-release"
     runs-on: ubuntu-latest
     if: ${{ inputs.pr_number != '' }}
+    outputs:
+      pr_head_ref: ${{ steps.get-pr.outputs.pr_head_ref }}
+      pr_is_draft: ${{ steps.get-pr.outputs.pr_is_draft }}
     # 開いているリリースのパッチバージョンを上げる
     steps:
       - uses: actions/checkout@v4
-      - name: get_pr
+      - name: Initialize
         uses: ./.github/actions/checkout-pr
         with:
           pr_number: ${{ inputs.pr_number }}
           user: ${{ inputs.user }}
-        id: get_pr
-      - name: Checkout PR
-        run: |
-          git fetch origin ${{ steps.get_pr.outputs.pr_head_ref }} --depth=1
-          git checkout ${{ steps.get_pr.outputs.pr_head_ref }}
+        id: get-pr
+  dispatch-prerelease:
+    name: "Dispatch Pre-release"
+    needs: pr-ref
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.pr-ref.outputs.pr_head_ref }}
       - name: Get Target Version
         uses: ./.github/actions/get-target-version
         id: v
@@ -46,7 +53,7 @@ jobs:
         uses: actions/script@v7
         env:
           CURRENT_VERSION: ${{ steps.v.outputs.current_version }}
-          pr_is_draft: steps.get_pr.outputs.pr_is_draft
+          pr_is_draft: needs.pr-ref.outputs.pr_is_draft
         with:
           script: |
             const [major, minor, _patch, _pre] = process.env.CURRENT_VERSION.split('.');
