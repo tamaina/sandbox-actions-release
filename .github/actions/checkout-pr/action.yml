@@ -1,8 +1,6 @@
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
-      shell: bash
     - name: git config
       run: |
         git config --local user.email "${{ inputs.user }}@users.noreply.github.com"

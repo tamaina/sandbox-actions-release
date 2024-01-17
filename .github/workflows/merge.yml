@@ -30,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ inputs.pr_number != '' }}
     steps:
+      - uses: actions/checkout@v4
       - name: Initialize
         uses: ./.github/actions/checkout-pr
 

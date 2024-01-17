@@ -27,6 +27,7 @@ jobs:
     if: ${{ inputs.pr_number != '' }}
     # 開いているリリースのパッチバージョンを上げる
     steps:
+      - uses: actions/checkout@v4
       - name: Initialize
         uses: ./.github/actions/checkout-pr
 
