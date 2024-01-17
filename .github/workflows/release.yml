@@ -30,6 +30,7 @@ jobs:
     # 開いているリリースのパッチバージョンを上げる
     name: "Dispatch Release"
     steps:
+      - uses: actions/checkout@v4
       # pr_numberからPR情報を取得
       - name: Get PR
         run: |
@@ -37,7 +38,7 @@ jobs:
           echo "PR_IS_DRAFT=$(echo $PR_JSON | jq -r '.isDraft')" >> $GITHUB_OUTPUT
           echo "PR_HEAD_REF=$(echo $PR_JSON | jq -r '.headRefName')" >> $GITHUB_OUTPUT
         id: get_pr
-      # checkout
+      # checkout PR
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.get_pr.outputs.PR_HEAD_REF }}
