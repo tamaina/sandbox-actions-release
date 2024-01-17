@@ -1,0 +1,13 @@
+runs:
+  using: "composite"
+  steps:
+    # CHANGELOG.mdの内容を取得
+    - name: Get changelog
+      run: |
+        {
+          echo 'changelog<<EOF'
+          sed -n '/## ${{ steps.next_target_version.outputs.result }}/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d'
+          echo EOF
+        } >> $GITHUB_OUTPUT
+      id: changelog
+      shell: bash

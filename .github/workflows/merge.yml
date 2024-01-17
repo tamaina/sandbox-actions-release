@@ -35,9 +35,8 @@ jobs:
 
       # バージョンをpackage.jsonに書き込み
       - name: Write version
-        run: |
-          jq '.version = "${{ steps.next_target_version.outputs.result }}"' package.json > package.json.tmp && mv package.json.tmp package.json
-          jq '.version = "${{ steps.next_target_version.outputs.result }}"' packages/misskey-js/package.json > packages/misskey-js/package.json.tmp && mv packages/misskey-js/package.json.tmp packages/misskey-js/package.json
+        uses: ./.github/actions/reweite-package-json
+
       # release/ブランチとタグを作成
       - name: Commit version
         run: |
@@ -50,13 +49,7 @@ jobs:
 
       # CHANGELOG.mdの内容を取得
       - name: Get changelog
-        run: |
-          {
-            echo 'changelog<<EOF'
-            sed -n '/## ${{ steps.next_target_version.outputs.result }}/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d'
-            echo EOF
-          } >> $GITHUB_OUTPUT
-        id: changelog
+        uses: ./.github/actions/get-changelog
 
       - name: Create tag
         run: |

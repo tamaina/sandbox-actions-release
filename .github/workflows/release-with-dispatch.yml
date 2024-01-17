@@ -17,7 +17,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  get-prs:
+  get-pr:
     runs-on: ubuntu-latest
     outputs:
       pr_number: ${{ steps.get_pr.outputs.pr_number }}
@@ -31,24 +31,24 @@ jobs:
 
   merge:
     uses: ./.github/workflows/merge.yml
-    needs: get-prs
-    if: ${{ needs.get-prs.outputs.pr_number != '' && inputs.merge == true }}
+    needs: get-pr
+    if: ${{ needs.get-pr.outputs.pr_number != '' && inputs.merge == true }}
     with:
-      pr_number: ${{ needs.get-prs.outputs.pr_number }}
+      pr_number: ${{ needs.get-pr.outputs.pr_number }}
       main: ${{ github.ref_name }}
       user: LuckyBeast
 
   dispatch-prerelease:
     uses: ./.github/workflows/dispatch-prerelease.yml
-    needs: get-prs
-    if: ${{ needs.get-prs.outputs.pr_number != '' }}
+    needs: get-pr
+    if: ${{ needs.get-pr.outputs.pr_number != '' }}
     with:
-      pr_number: ${{ needs.get-prs.outputs.pr_number }}
+      pr_number: ${{ needs.get-pr.outputs.pr_number }}
       user: LuckyBeast
 
   create-target:
     uses: ./.github/workflows/create-target.yml
-    needs: get-prs
-    if: ${{ needs.get-prs.outputs.pr_number == '' }}
+    needs: get-pr
+    if: ${{ needs.get-pr.outputs.pr_number == '' }}
     with:
       user: LuckyBeast

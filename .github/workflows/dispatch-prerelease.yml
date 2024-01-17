@@ -72,13 +72,7 @@ jobs:
           git push origin "${{ steps.next_release_version.outputs.result }}"
       # CHANGELOG.mdの内容を取得
       - name: Get changelog
-        run: |
-          {
-            echo 'changelog<<EOF'
-            sed -n '/## ${{ steps.next_target_version.outputs.result }}/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d'
-            echo EOF
-          } >> $GITHUB_OUTPUT
-        id: changelog
+        uses: ./.github/actions/get-changelog
       # リリースを作成
       - name: Create release
         run: |
