@@ -70,7 +70,7 @@ jobs:
           PR_IS_DRAFT: ${{ steps.get_pr.outputs.PR_IS_DRAFT == 'true' }}
         with:
           script: |
-            console.log(PR_IS_DRAFT, '${{ steps.get_pr.outputs.PR_IS_DRAFT }}')
+            console.log(process.env.PR_IS_DRAFT, '${{ steps.get_pr.outputs.PR_IS_DRAFT }}')
             const [major, minor, _patch, _pre] = process.env.CURRENT_VERSION.split('.');
             const pre = Number(_pre);
             if (Number.isNaN(pre)) {
