@@ -67,10 +67,9 @@ jobs:
         uses: actions/script@v7
         env:
           CURRENT_VERSION: ${{ steps.get_current_version.outputs.current_version }}
-          PR_IS_DRAFT: ${{ steps.get_pr.outputs.PR_IS_DRAFT == 'true' }}
+          PR_IS_DRAFT: steps.get_pr.outputs.PR_IS_DRAFT
         with:
           script: |
-            console.log(process.env.PR_IS_DRAFT, '${{ steps.get_pr.outputs.PR_IS_DRAFT }}')
             const [major, minor, _patch, _pre] = process.env.CURRENT_VERSION.split('.');
             const pre = Number(_pre);
             if (Number.isNaN(pre)) {
@@ -78,7 +77,7 @@ jobs:
               throw new Error('Invalid pre version');
             }
 
-            if (process.env.PR_IS_DRAFT) {
+            if (process.env.PR_IS_DRAFT == 'true') {
               if (_patch.endsWith('beta')) {
                 return `${major}.${minor}.${_patch}.${pre + 1}`;
               }
