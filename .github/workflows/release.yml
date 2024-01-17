@@ -116,3 +116,7 @@ jobs:
             git commit -am "Update CHANGELOG.md (prepend Unreleased)"
             git push origin HEAD:${{ github.ref_name }}
           fi
+      # PRを作成
+      - name: Create PR
+        run: |
+          gh pr create --title "Release: ${{ steps.increment_version.outputs.result }}" --body "${{ steps.changelog.outputs.changelog }}" --base release/${{ steps.increment_version.outputs.result }} --head ${{ github.ref_name }}
