@@ -31,6 +31,7 @@ jobs:
   create-release:
     permissions:
       contents: write
+      issues: write
       pull-requests: write
     needs: get-prs
     runs-on: ubuntu-latest
