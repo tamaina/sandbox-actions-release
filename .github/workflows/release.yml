@@ -96,14 +96,15 @@ jobs:
           git config --local user.name "LuckyBeast"
           if (git diff --shortstat | grep '[0-9]'); then \
             git commit -am "Bump version to ${{ steps.next_version.outputs.next }}"
-            git tag -a ${{ steps.next_version.outputs.next }} -m "Bump version to ${{ steps.next_version.outputs.next }}"
+            git tag "${{ steps.next_version.outputs.next }}"
             git push origin HEAD:${{ github.ref_name }}
-            git push origin HEAD:release/${{ steps.next_version.outputs.next }} --tags
+            git push origin "${{ steps.next_version.outputs.next }}"
+            git push origin HEAD:release/${{ steps.next_version.outputs.next }}
           fi
       # リリースを作成
       - name: Create release
         run: |
-          gh release create ${{ steps.next_version.outputs.next }} --prerelease --title "${{ steps.next_version.outputs.next }}" --notes "${{ steps.changelog.outputs.changelog }}"
+          gh release create "${{ steps.next_version.outputs.next }}"" --prerelease --title "${{ steps.next_version.outputs.next }}" --notes "${{ steps.changelog.outputs.changelog }}"
       # CHANGELOG.mdにUnreleasedを追加
       # 環境変数から挿入する部分: https://qiita.com/sahayan/items/8658992f0f48eb5d2bc4
       - name: Modify CHANGELOG.md
