@@ -3,17 +3,6 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  CHANGES_TEMPLATE: |
-    ## 202x.x.x (Unreleased)
-
-    ### General
-    -
-
-    ### Client
-    -
-
-    ### Server
-    -
 
 name: "Release Manager"
 
@@ -81,7 +70,7 @@ jobs:
         run: |
           jq '.version = "${{ steps.next_version.outputs.next }}"' package.json > package.json.tmp && mv package.json.tmp package.json
           jq '.version = "${{ steps.next_version.outputs.next }}"' packages/misskey-js/package.json > packages/misskey-js/package.json.tmp && mv packages/misskey-js/package.json.tmp packages/misskey-js/package.json
-      # CHANGELOG.mdのUnreleasedの内容を後で使うために取得
+      # CHANGELOG.mdのUnreleasedの内容を取得
       - name: Get changelog
         run: |
           {
@@ -91,28 +80,16 @@ jobs:
           } >> $GITHUB_OUTPUT
         id: changelog
       # CHANGELOG.mdのバージョンの書き換え
-      # 環境変数から挿入する部分: https://qiita.com/sahayan/items/8658992f0f48eb5d2bc4
       - name: Modify CHANGELOG.md
         run: |
           sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
-          sed -i "1i $(echo "${CHANGES_TEMPLATE}" | sed -r 's/$/\\n/' | while IFS= read -r line; do echo -n "$line"; done)" CHANGELOG.md
-      # masterに分岐点となるコミットを追加
+      # release/ブランチとタグを作成
       - name: Commit version
         run: |
-          git commit -am "Bump version to ${{ steps.next_version.outputs.next }} (shared point)"
-          git push origin HEAD:${{ github.ref_name }}
-      # CHANGELOG.mdから追加したUnreleasedの部分を削除
-      - name: Modify CHANGELOG.md
-        run: |
-            sed -i '/^## 202x.x.x (Unreleased)/,/^## /d' CHANGELOG.md
-            sed -i "1i ## ${{ steps.increment_version.outputs.result }}" CHANGELOG.md
-      # …と一見無駄に見える作業でdiffを作成しrelease/ブランチを作成
-      - name: Commit version
-        run: |
-          git commit -am "Bump version to ${{ steps.next_version.outputs.next }} (diff point)"
+          git commit -am "Bump version to ${{ steps.next_version.outputs.next }}"
+          git push origin HEAD:release/${{ steps.increment_version.outputs.result }}
           git tag "${{ steps.next_version.outputs.next }}"
           git push origin "${{ steps.next_version.outputs.next }}"
-          git push origin HEAD:release/${{ steps.increment_version.outputs.result }}
       # リリースを作成
       - name: Create release
         run: |
