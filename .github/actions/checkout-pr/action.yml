@@ -29,6 +29,6 @@ runs:
         echo "pr_head_ref=$(echo $pr_json | jq -r '.headRefName')" >> $GITHUB_OUTPUT
       id: get_pr
       shell: bash
-    #- uses: actions/checkout@v4
-    #  with:
-    #    ref: ${{ steps.get_pr.outputs.pr_head_ref }}
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ steps.get_pr.outputs.pr_head_ref }}

@@ -36,16 +36,13 @@ jobs:
         with:
           pr_number: ${{ inputs.pr_number }}
           user: ${{ inputs.user }}
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.get_pr.outputs.pr_head_ref }}
       - name: Get Target Version
         uses: ./.github/actions/get-target-version
         id: v
 
       # バージョンをpackage.jsonに書き込み
       - name: Write version
-        uses: ./.github/actions/reweite-package-json
+        uses: ./.github/actions/rewrite-package-json
         with:
           version: ${{ steps.v.outputs.target_version }}
 
