@@ -27,5 +27,3 @@ runs:
     - uses: actions/checkout@v4
       with:
         ref: ${{ steps.get_pr.outputs.pr_head_ref }}
-    - name: Get Target Version
-      uses: ./.github/actions/get-target-version

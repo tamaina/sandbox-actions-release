@@ -36,6 +36,9 @@ jobs:
         with:
           pr_number: ${{ inputs.pr_number }}
           user: ${{ inputs.user }}
+      - name: Get Target Version
+        uses: ./.github/actions/get-target-version
+
       # バージョンをpackage.jsonに書き込み
       - name: Write version
         uses: ./.github/actions/reweite-package-json

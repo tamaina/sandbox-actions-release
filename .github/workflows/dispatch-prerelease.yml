@@ -33,6 +33,9 @@ jobs:
         with:
           pr_number: ${{ inputs.pr_number }}
           user: ${{ inputs.user }}
+      - name: Get Target Version
+        uses: ./.github/actions/get-target-version
+
       # バージョンをインクリメント
       - name: Increment version
         uses: actions/script@v7
