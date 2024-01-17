@@ -28,7 +28,7 @@ jobs:
     # 開いているリリースのパッチバージョンを上げる
     steps:
       - uses: actions/checkout@v4
-      - name: Initialize
+      - name: get_pr
         uses: ./.github/actions/checkout-pr
         with:
           pr_number: ${{ inputs.pr_number }}
