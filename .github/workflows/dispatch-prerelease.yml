@@ -34,9 +34,10 @@ jobs:
           pr_number: ${{ inputs.pr_number }}
           user: ${{ inputs.user }}
         id: get_pr
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.get_pr.outputs.pr_head_ref }}
+      - name: Checkout PR
+        run: |
+          git fetch origin ${{ steps.get_pr.outputs.pr_head_ref }} --depth=1
+          git checkout ${{ steps.get_pr.outputs.pr_head_ref }}
       - name: Get Target Version
         uses: ./.github/actions/get-target-version
         id: v
