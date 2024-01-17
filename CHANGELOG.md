@@ -1,13 +1,13 @@
 ## 2024.1.18
 
 ### General
--
+- nannka iikanjini
 
 ### Client
--
+- yatta
 
 ### Server
--
+- done
 
 
 ## 2024.1.17
