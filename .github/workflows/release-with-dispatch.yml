@@ -2,6 +2,11 @@ name: "Release Manager"
 
 on:
   workflow_dispatch:
+    inputs:
+      merge:
+        type: boolean
+        description: 'Merge release branch'
+        default: false
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -24,17 +29,26 @@ jobs:
           echo "pr_number=$(gh pr list --limit 1 --search "head:release/ is:open" --json number  --jq '.[] | .number')" >> $GITHUB_OUTPUT
         id: get_pr
 
+  merge:
+    uses: ./.github/workflows/merge.yml
+    needs: get-prs
+    if: ${{ needs.get-prs.outputs.pr_number != '' && inputs.merge == true }}
+    with:
+      pr_number: ${{ needs.get-prs.outputs.pr_number }}
+      main: ${{ github.ref_name }}
+      user: LuckyBeast
+
   dispatch-prerelease:
     uses: ./.github/workflows/dispatch-prerelease.yml
     needs: get-prs
     if: ${{ needs.get-prs.outputs.pr_number != '' }}
     with:
       pr_number: ${{ needs.get-prs.outputs.pr_number }}
-      user: 'LuckyBeast'
+      user: LuckyBeast
 
   create-target:
     uses: ./.github/workflows/create-target.yml
     needs: get-prs
     if: ${{ needs.get-prs.outputs.pr_number == '' }}
     with:
-      user: 'LuckyBeast'
+      user: LuckyBeast

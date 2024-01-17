@@ -1,3 +1,5 @@
+name: "Create release branch, tag, and PR"
+
 on:
   workflow_call:
     inputs:
@@ -14,13 +16,11 @@ permissions:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-name: "Release Manager"
-
 jobs:
   create-target:
+    name: "Create release branch, tag, and PR"
     runs-on: ubuntu-latest
     # 日付ベースでリリースを作成
-    name: "Create branch, tag, and PR"
     steps:
       - uses: actions/checkout@v4
       - name: git config
