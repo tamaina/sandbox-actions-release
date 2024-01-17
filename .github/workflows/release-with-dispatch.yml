@@ -41,7 +41,7 @@ jobs:
   dispatch-prerelease:
     uses: ./.github/workflows/dispatch-prerelease.yml
     needs: get-pr
-    if: ${{ needs.get-pr.outputs.pr_number != '' }}
+    if: ${{ needs.get-pr.outputs.pr_number != '' && inputs.merge != true  }}
     with:
       pr_number: ${{ needs.get-pr.outputs.pr_number }}
       user: LuckyBeast
