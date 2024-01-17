@@ -1,13 +1,15 @@
-## 202x.x.x (Unreleased)
+## 2024.1.18
 
 ### General
--
+- nannka iikanjini
+- nanka iroiro kaeta
 
 ### Client
--
+- yatta
+- dekita
 
 ### Server
--
+- done
 
 
 ## 2024.1.17
