@@ -83,7 +83,7 @@ jobs:
             echo 'changelog<<EOF'
             sed -n '/## 202x.x.x (Unreleased)/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d'
             echo EOF
-          } >> "$GITHUB_ENV"
+          } >> $GITHUB_OUTPUT
         id: changelog
       # CHANGELOG.mdのバージョンの書き換え
       - name: Modify CHANGELOG.md
