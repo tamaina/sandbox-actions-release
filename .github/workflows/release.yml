@@ -31,6 +31,10 @@ jobs:
     name: "Dispatch Release"
     steps:
       - uses: actions/checkout@v4
+      - name: git config
+        run: |
+          git config --local user.email "LuckyBeast@users.noreply.github.com"
+          git config --local user.name "LuckyBeast"
       # pr_numberからPR情報を取得
       - name: Get PR
         run: |
