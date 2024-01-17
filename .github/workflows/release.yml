@@ -26,7 +26,7 @@ jobs:
       issues: write
       pull-requests: write
     needs: get-prs
-    if: ${{ needs.get-prs.outputs.pr_number == '' }}
+    if: ${{ needs.get-prs.outputs.pr_number != '' }}
     with:
       pr_number: ${{ needs.get-prs.outputs.pr_number }}
       user: 'LuckyBeast'
@@ -38,6 +38,6 @@ jobs:
       issues: write
       pull-requests: write
     needs: get-prs
-    if: ${{ needs.get-prs.outputs.pr_number != '' }}
+    if: ${{ needs.get-prs.outputs.pr_number == '' }}
     with:
       user: 'LuckyBeast'
