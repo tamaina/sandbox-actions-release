@@ -120,4 +120,4 @@ jobs:
       # PRを作成
       - name: Create PR
         run: |
-          gh pr create --title "Release: ${{ steps.increment_version.outputs.result }}" --body "${{ steps.changelog.outputs.changelog }}" --base release/${{ steps.increment_version.outputs.result }} --head ${{ github.ref_name }}
+          gh pr create --draft --title "Release: ${{ steps.increment_version.outputs.result }}" --body "${{ steps.changelog.outputs.changelog }}" --head release/${{ steps.increment_version.outputs.result }} --base ${{ github.ref_name }}
