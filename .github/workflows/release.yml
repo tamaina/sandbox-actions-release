@@ -99,7 +99,7 @@ jobs:
             git tag "${{ steps.next_version.outputs.next }}"
             git push origin HEAD:${{ github.ref_name }}
             git push origin "${{ steps.next_version.outputs.next }}"
-            git push origin HEAD:release/${{ steps.next_version.outputs.next }}
+            git push origin HEAD:release/${{ steps.increment_version.outputs.result }}
           fi
       # リリースを作成
       - name: Create release
