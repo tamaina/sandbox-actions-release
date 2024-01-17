@@ -30,38 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ inputs.pr_number != '' }}
     steps:
-      - uses: actions/checkout@v4
-      - name: git config
-        run: |
-          git config --local user.email "${{ inputs.user }}@users.noreply.github.com"
-          git config --local user.name "${{ inputs.user }}"
-      # pr_numberからPR情報を取得
-      - name: Get PR
-        run: |
-          pr_json=$(gh pr view ${{ inputs.pr_number }} --json isDraft,headRefName)
-          echo "pr_is_draft=$(echo $pr_json | jq -r '.isDraft')" >> $GITHUB_OUTPUT
-          echo "pr_head_ref=$(echo $pr_json | jq -r '.headRefName')" >> $GITHUB_OUTPUT
-        id: get_pr
-      # checkout PR
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.get_pr.outputs.pr_head_ref }}
-      # jqでpackage.jsonから現在のバージョンを取得
-      - name: Get current version
-        run: |
-          jq -r '.version' package.json
-          echo "current_version=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
-        id: get_current_version
-      # current_versionを加工してtarget_versionを取得
-      - name: Get target version
-        uses: actions/script@v7
-        env:
-          CURRENT_VERSION: ${{ steps.get_current_version.outputs.current_version }}
-        with:
-          script: |
-            return process.env.CURRENT_VERSION.split('-')[0];
-          result-encoding: string
-        id: next_target_version
+      - name: Initialize
+        uses: ./.github/actions/checkout-pr
 
       # バージョンをpackage.jsonに書き込み
       - name: Write version
