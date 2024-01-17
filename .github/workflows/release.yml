@@ -21,6 +21,10 @@ jobs:
 
   dispatch-prerelease:
     uses: ./.github/workflows/dispatch-prerelease.yml
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     needs: get-prs
     if: ${{ needs.get-prs.outputs.pr_number == '' }}
     with:
@@ -29,6 +33,10 @@ jobs:
 
   create-target:
     uses: ./.github/workflows/create-target.yml
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     needs: get-prs
     if: ${{ needs.get-prs.outputs.pr_number != '' }}
     with:
