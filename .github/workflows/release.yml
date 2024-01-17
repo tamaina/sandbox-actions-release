@@ -19,185 +19,21 @@ jobs:
           echo "pr_number=$(gh pr list --limit 1 --search "head:release/ is:open" --json number  --jq '.[] | .number')" >> $GITHUB_OUTPUT
         id: get_prs
 
-  dispatch-release:
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
+  dispatch-prerelease:
+    uses: ./.github/workflows/dispatch-prerelease.yml
     needs: get-prs
-    runs-on: ubuntu-latest
-    if: ${{ needs.get-prs.outputs.pr_number != '' }}
-    # 開いているリリースのパッチバージョンを上げる
-    name: "Dispatch Release"
-    steps:
-      - uses: actions/checkout@v4
-      - name: git config
-        run: |
-          git config --local user.email "LuckyBeast@users.noreply.github.com"
-          git config --local user.name "LuckyBeast"
-      # pr_numberからPR情報を取得
-      - name: Get PR
-        run: |
-          PR_JSON=$(gh pr view ${{ needs.get-prs.outputs.pr_number }} --json isDraft,headRefName)
-          echo "PR_IS_DRAFT=$(echo $PR_JSON | jq -r '.isDraft')" >> $GITHUB_OUTPUT
-          echo "PR_HEAD_REF=$(echo $PR_JSON | jq -r '.headRefName')" >> $GITHUB_OUTPUT
-        id: get_pr
-      # checkout PR
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.get_pr.outputs.PR_HEAD_REF }}
-      # jqでpackage.jsonから現在のバージョンを取得
-      - name: Get current version
-        run: |
-          jq -r '.version' package.json
-          echo "current_version=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
-        id: get_current_version
-      # current_versionを加工してtarget_versionを取得
-      - name: Get target version
-        uses: actions/script@v7
-        env:
-          CURRENT_VERSION: ${{ steps.get_current_version.outputs.current_version }}
-        with:
-          script: |
-            return process.env.CURRENT_VERSION.split('-')[0];
-          result-encoding: string
-        id: next_target_version
-      # バージョンをインクリメント
-      - name: Increment version
-        uses: actions/script@v7
-        env:
-          CURRENT_VERSION: ${{ steps.get_current_version.outputs.current_version }}
-          PR_IS_DRAFT: steps.get_pr.outputs.PR_IS_DRAFT
-        with:
-          script: |
-            const [major, minor, _patch, _pre] = process.env.CURRENT_VERSION.split('.');
-            const pre = Number(_pre);
-            if (Number.isNaN(pre)) {
-              console.error('Invalid pre version', year, month, process.env.CURRENT_VERSION, major, minor, _patch);
-              throw new Error('Invalid pre version');
-            }
-
-            if (process.env.PR_IS_DRAFT == 'true') {
-              if (_patch.endsWith('beta')) {
-                return `${major}.${minor}.${_patch}.${pre + 1}`;
-              }
-              return `${major}.${minor}.${_patch.split('-')[0]}-beta.${pre + 1}`;
-            }
-            if (_patch.endsWith('rc')) {
-              return `${major}.${minor}.${_patch}.${pre + 1}`;
-            }
-            return `${major}.${minor}.${_patch.split('-')[0]}-rc.${pre + 1}`;
-
-          result-encoding: string
-        id: next_release_version
-      # バージョンをpackage.jsonに書き込み
-      - name: Write version
-        run: |
-          jq '.version = "${{ steps.next_release_version.outputs.result }}"' package.json > package.json.tmp && mv package.json.tmp package.json
-          jq '.version = "${{ steps.next_release_version.outputs.result }}"' packages/misskey-js/package.json > packages/misskey-js/package.json.tmp && mv packages/misskey-js/package.json.tmp packages/misskey-js/package.json
-      # release/ブランチとタグを作成
-      - name: Commit version
-        run: |
-          git commit -am "Bump version to ${{ steps.next_release_version.outputs.result }}"
-          git push origin HEAD:release/${{ steps.next_target_version.outputs.result }}
-          git tag "${{ steps.next_release_version.outputs.result }}"
-          git push origin "${{ steps.next_release_version.outputs.result }}"
-      # CHANGELOG.mdのUnreleasedの内容を取得
-      - name: Get changelog
-        run: |
-          {
-            echo 'changelog<<EOF'
-            sed -n '/## ${{ steps.next_target_version.outputs.result }}/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d'
-            echo EOF
-          } >> $GITHUB_OUTPUT
-        id: changelog
-      # リリースを作成
-      - name: Create release
-        run: |
-          gh release create "${{ steps.next_release_version.outputs.result }}" --prerelease --title "${{ steps.next_release_version.outputs.result }}" --notes "${{ steps.changelog.outputs.changelog }}"
-      # PRのnotesを更新
-      - name: Update PR
-        run: |
-          gh pr edit ${{ needs.get-prs.outputs.pr_number }} --body "${{ steps.changelog.outputs.changelog }}"
-
-  create-release:
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-    needs: get-prs
-    runs-on: ubuntu-latest
     if: ${{ needs.get-prs.outputs.pr_number == '' }}
-    # 日付ベースでリリースを作成
-    name: "Create Release"
-    steps:
-      - uses: actions/checkout@v4
-      - name: git config
-        run: |
-          git config --local user.email "LuckyBeast@users.noreply.github.com"
-          git config --local user.name "LuckyBeast"
-      # jqでpackage.jsonから現在のバージョンを取得
-      - name: Get current version
-        run: |
-          jq -r '.version' package.json
-          echo "current_version=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
-        id: get_current_version
-      # バージョンをインクリメント
-      - name: Increment version
-        uses: actions/script@v7
-        env:
-          CURRENT_VERSION: ${{ steps.get_current_version.outputs.current_version }}
-        with:
-          script: |
-            const now = new Date();
-            const year = now.toLocaleDateString('en-US', { year: 'numeric', timeZone: 'Asia/Tokyo' });
-            const month = now.toLocaleDateString('en-US', { month: 'numeric', timeZone: 'Asia/Tokyo' });
-            const [major, minor, _patch] = process.env.CURRENT_VERSION.split('.');
-            const patch = Number(_patch.split('-')[0]);
-            if (Number.isNaN(patch)) {
-              console.error('Invalid patch version', year, month, process.env.CURRENT_VERSION, major, minor, _patch);
-              throw new Error('Invalid patch version');
-            }
-            if (year !== major || month !== minor) {
-              return `${year}.${month}.0`;
-            } else {
-              return `${major}.${minor}.${patch + 1}`;
-            }
-          result-encoding: string
-        id: next_target_version
-      - name: beta 0
-        run: echo "result=${{ steps.next_target_version.outputs.result }}-beta.0" >> $GITHUB_OUTPUT
-        id: next_release_version
-      # バージョンをpackage.jsonに書き込み
-      - name: Write version
-        run: |
-          jq '.version = "${{ steps.next_release_version.outputs.result }}"' package.json > package.json.tmp && mv package.json.tmp package.json
-          jq '.version = "${{ steps.next_release_version.outputs.result }}"' packages/misskey-js/package.json > packages/misskey-js/package.json.tmp && mv packages/misskey-js/package.json.tmp packages/misskey-js/package.json
-      # CHANGELOG.mdのUnreleasedの内容を取得
-      - name: Get changelog
-        run: |
-          {
-            echo 'changelog<<EOF'
-            sed -n '/## 202x.x.x (Unreleased)/,/^## /p' CHANGELOG.md | sed -e 1d -e '$d'
-            echo EOF
-          } >> $GITHUB_OUTPUT
-        id: changelog
-      # CHANGELOG.mdのバージョンの書き換え
-      - name: Modify CHANGELOG.md
-        run: |
-          sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.next_target_version.outputs.result }}/' CHANGELOG.md
-      # release/ブランチとタグを作成
-      - name: Commit version
-        run: |
-          git commit -am "Bump version to ${{ steps.next_release_version.outputs.result }}"
-          git push origin HEAD:release/${{ steps.next_target_version.outputs.result }}
-          git tag "${{ steps.next_release_version.outputs.result }}"
-          git push origin "${{ steps.next_release_version.outputs.result }}"
-      # リリースを作成
-      - name: Create release
-        run: |
-          gh release create "${{ steps.next_release_version.outputs.result }}" --prerelease --title "${{ steps.next_release_version.outputs.result }}" --notes "${{ steps.changelog.outputs.changelog }}"
-      # PRを作成
-      - name: Create PR
-        run: |
-          gh pr create --draft --title "Release: ${{ steps.next_target_version.outputs.result }}" --body "${{ steps.changelog.outputs.changelog }}" --head release/${{ steps.next_target_version.outputs.result }} --base ${{ github.ref_name }}
+    with:
+      pr_number: ${{ needs.get-prs.outputs.pr_number }}
+      user: 'LuckyBeast'
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create-target:
+    uses: ./.github/workflows/create-target.yml
+    needs: get-prs
+    if: ${{ needs.get-prs.outputs.pr_number != '' }}
+    with:
+      user: 'LuckyBeast'
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
