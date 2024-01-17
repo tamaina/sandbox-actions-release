@@ -6,6 +6,7 @@
 
 ### Client
 - yatta
+- dekita
 
 ### Server
 - done
