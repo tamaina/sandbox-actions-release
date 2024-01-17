@@ -35,14 +35,14 @@ jobs:
       # pr_numberからPR情報を取得
       - name: Get PR
         run: |
-          PR_JSON=$(gh pr view ${{ inputs.pr_number }} --json isDraft,headRefName)
-          echo "PR_IS_DRAFT=$(echo $PR_JSON | jq -r '.isDraft')" >> $GITHUB_OUTPUT
-          echo "PR_HEAD_REF=$(echo $PR_JSON | jq -r '.headRefName')" >> $GITHUB_OUTPUT
+          pr_json=$(gh pr view ${{ inputs.pr_number }} --json isDraft,headRefName)
+          echo "pr_is_draft=$(echo $pr_json | jq -r '.isDraft')" >> $GITHUB_OUTPUT
+          echo "pr_head_ref=$(echo $pr_json | jq -r '.headRefName')" >> $GITHUB_OUTPUT
         id: get_pr
       # checkout PR
       - uses: actions/checkout@v4
         with:
-          ref: ${{ steps.get_pr.outputs.PR_HEAD_REF }}
+          ref: ${{ steps.get_pr.outputs.pr_head_ref }}
       # jqでpackage.jsonから現在のバージョンを取得
       - name: Get current version
         run: |
@@ -64,7 +64,7 @@ jobs:
         uses: actions/script@v7
         env:
           CURRENT_VERSION: ${{ steps.get_current_version.outputs.current_version }}
-          PR_IS_DRAFT: steps.get_pr.outputs.PR_IS_DRAFT
+          pr_is_draft: steps.get_pr.outputs.pr_is_draft
         with:
           script: |
             const [major, minor, _patch, _pre] = process.env.CURRENT_VERSION.split('.');
@@ -74,7 +74,7 @@ jobs:
               throw new Error('Invalid pre version');
             }
 
-            if (process.env.PR_IS_DRAFT == 'true') {
+            if (process.env.pr_is_draft == 'true') {
               if (_patch.endsWith('beta')) {
                 return `${major}.${minor}.${_patch}.${pre + 1}`;
               }
@@ -99,7 +99,7 @@ jobs:
           git push origin HEAD:release/${{ steps.next_target_version.outputs.result }}
           git tag "${{ steps.next_release_version.outputs.result }}"
           git push origin "${{ steps.next_release_version.outputs.result }}"
-      # CHANGELOG.mdのUnreleasedの内容を取得
+      # CHANGELOG.mdの内容を取得
       - name: Get changelog
         run: |
           {
@@ -113,6 +113,7 @@ jobs:
         run: |
           gh release create "${{ steps.next_release_version.outputs.result }}" --prerelease --title "${{ steps.next_release_version.outputs.result }}" --notes "${{ steps.changelog.outputs.changelog }}"
       # PRのnotesを更新
-      - name: Update PR
-        run: |
-          gh pr edit ${{ inputs.pr_number }} --body "${{ steps.changelog.outputs.changelog }}"
+      # (通常release-edit-with-pushで更新されているためここで更新されることはない)
+      #- name: Update PR
+      #  run: |
+      #    gh pr edit ${{ inputs.pr_number }} --body "${{ steps.changelog.outputs.changelog }}"

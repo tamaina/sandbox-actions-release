@@ -1,30 +1,31 @@
+name: "Release Manager"
+
 on:
   workflow_dispatch:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-name: "Release Manager"
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
   get-prs:
     runs-on: ubuntu-latest
     outputs:
-      pr_number: ${{ steps.get_prs.outputs.pr_number }}
+      pr_number: ${{ steps.get_pr.outputs.pr_number }}
     steps:
       - uses: actions/checkout@v4
       # headがrelease/かつopenのPRを1つ取得
       - name: Get PRs
         run: |
           echo "pr_number=$(gh pr list --limit 1 --search "head:release/ is:open" --json number  --jq '.[] | .number')" >> $GITHUB_OUTPUT
-        id: get_prs
+        id: get_pr
 
   dispatch-prerelease:
     uses: ./.github/workflows/dispatch-prerelease.yml
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
     needs: get-prs
     if: ${{ needs.get-prs.outputs.pr_number != '' }}
     with:
@@ -33,10 +34,6 @@ jobs:
 
   create-target:
     uses: ./.github/workflows/create-target.yml
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
     needs: get-prs
     if: ${{ needs.get-prs.outputs.pr_number == '' }}
     with:

@@ -1,3 +1,5 @@
+name: "Release Manager: release RC when ready for review"
+
 on:
   pull_request:
     types: [ready_for_review]
@@ -5,7 +7,10 @@ on:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-name: "Release Manager: release RC when ready for review"
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
   check:
@@ -17,17 +22,13 @@ jobs:
       # PR情報を取得
       - name: Get PR
         run: |
-          PR_JSON=$(gh pr view ${{ github.event.pull_request.number }} --json isDraft,headRefName)
-          echo "ref=$(echo $PR_JSON | jq -r '.headRefName')" >> $GITHUB_OUTPUT
+          pr_json=$(gh pr view ${{ github.event.pull_request.number }} --json isDraft,headRefName)
+          echo "ref=$(echo $pr_json | jq -r '.headRefName')" >> $GITHUB_OUTPUT
         id: get_pr
   release:
     uses: ./.github/workflows/dispatch-prerelease.yml
     needs: check
     if: startsWith(needs.check.outputs.ref, 'release/')
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
     with:
       pr_number: ${{ github.event.pull_request.number }}
       user: 'LuckyBeast'
