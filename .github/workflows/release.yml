@@ -104,7 +104,7 @@ jobs:
       # リリースを作成
       - name: Create release
         run: |
-          gh release create "${{ steps.next_version.outputs.next }}"" --prerelease --title "${{ steps.next_version.outputs.next }}" --notes "${{ steps.changelog.outputs.changelog }}"
+          gh release create "${{ steps.next_version.outputs.next }}" --prerelease --title "${{ steps.next_version.outputs.next }}" --notes "${{ steps.changelog.outputs.changelog }}"
       # CHANGELOG.mdにUnreleasedを追加
       # 環境変数から挿入する部分: https://qiita.com/sahayan/items/8658992f0f48eb5d2bc4
       - name: Modify CHANGELOG.md
