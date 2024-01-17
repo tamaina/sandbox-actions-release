@@ -40,6 +40,10 @@ jobs:
     name: "Create Release"
     steps:
       - uses: actions/checkout@v4
+      - name: git config
+        run: |
+          git config --local user.email "LuckyBeast@users.noreply.github.com"
+          git config --local user.name "LuckyBeast"
       # jqでpackage.jsonから現在のバージョンを取得
       - name: Get current version
         run: |
@@ -87,36 +91,32 @@ jobs:
           } >> $GITHUB_OUTPUT
         id: changelog
       # CHANGELOG.mdのバージョンの書き換え
+      # 環境変数から挿入する部分: https://qiita.com/sahayan/items/8658992f0f48eb5d2bc4
       - name: Modify CHANGELOG.md
         run: |
           sed -i 's/## 202x.x.x (Unreleased)/## ${{ steps.increment_version.outputs.result }}/' CHANGELOG.md
-      # バージョンとタグをコミット・プッシュ
+          sed -i "1i $(echo "${CHANGES_TEMPLATE}" | sed -r 's/$/\\n/' | while IFS= read -r line; do echo -n "$line"; done)" CHANGELOG.md
+      # masterに分岐点となるコミットを追加
       - name: Commit version
         run: |
-          git config --local user.email "LuckyBeast@users.noreply.github.com"
-          git config --local user.name "LuckyBeast"
-          if (git diff --shortstat | grep '[0-9]'); then \
-            git commit -am "Bump version to ${{ steps.next_version.outputs.next }}"
-            git tag "${{ steps.next_version.outputs.next }}"
-            git push origin HEAD:${{ github.ref_name }}
-            git push origin "${{ steps.next_version.outputs.next }}"
-            git push origin HEAD:release/${{ steps.increment_version.outputs.result }}
-          fi
+          git commit -am "Bump version to ${{ steps.next_version.outputs.next }} (shared point)"
+          git push origin HEAD:${{ github.ref_name }}
+      # CHANGELOG.mdから追加したUnreleasedの部分を削除
+      - name: Modify CHANGELOG.md
+        run: |
+            sed -i '/^## 202x.x.x (Unreleased)/,/^## /d' CHANGELOG.md
+            sed -i "1i ## ${{ steps.next_version.outputs.next }}"
+      # …と一見無駄に見える作業でdiffを作成しrelease/ブランチを作成
+      - name: Commit version
+        run: |
+          git commit -am "Bump version to ${{ steps.next_version.outputs.next }} (diff point)"
+          git tag "${{ steps.next_version.outputs.next }}"
+          git push origin "${{ steps.next_version.outputs.next }}"
+          git push origin HEAD:release/${{ steps.increment_version.outputs.result }}
       # リリースを作成
       - name: Create release
         run: |
           gh release create "${{ steps.next_version.outputs.next }}" --prerelease --title "${{ steps.next_version.outputs.next }}" --notes "${{ steps.changelog.outputs.changelog }}"
-      # CHANGELOG.mdにUnreleasedを追加
-      # 環境変数から挿入する部分: https://qiita.com/sahayan/items/8658992f0f48eb5d2bc4
-      - name: Modify CHANGELOG.md
-        run: |
-          sed -i "1i $(echo "${CHANGES_TEMPLATE}" | sed -r 's/$/\\n/' | while IFS= read -r line; do echo -n "$line"; done)" CHANGELOG.md
-      - name: Commit CHANGELOG mofdification
-        run: |
-          if (git diff --shortstat | grep '[0-9]'); then \
-            git commit -am "Update CHANGELOG.md (prepend Unreleased)"
-            git push origin HEAD:${{ github.ref_name }}
-          fi
       # PRを作成
       - name: Create PR
         run: |
