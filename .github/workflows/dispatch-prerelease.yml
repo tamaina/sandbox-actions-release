@@ -30,7 +30,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Initialize
         uses: ./.github/actions/checkout-pr
-
+        with:
+          pr_number: ${{ inputs.pr_number }}
+          user: ${{ inputs.user }}
       # バージョンをインクリメント
       - name: Increment version
         uses: actions/script@v7
