@@ -2,6 +2,7 @@
 
 ### General
 - nannka iikanjini
+- nanka iroiro kaeta
 
 ### Client
 - yatta
